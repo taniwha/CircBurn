@@ -47,7 +47,8 @@ namespace CircBurn {
 
 		internal static CircBurn instance;
 
-		ScrollView patchscroll = new ScrollView (680, 300);
+		ScrollView patchesScroll = new ScrollView (320, 200);
+		ScrollView plannedScroll = new ScrollView (320, 200);
 
 		public static void ToggleGUI ()
 		{
@@ -107,274 +108,147 @@ namespace CircBurn {
 		{
 		}
 
-		struct PatchLine {
-			public string cur1;
-			public string cur2;
-			public string cur3;
-			public string cur4;
-			public bool curFlag;	// optimal pe is outside SoI
-			public string plan1;
-			public string plan2;
-			public string plan3;
-			public string plan4;
-			public bool planFlag;	// optimal pe is outside SoI
-		}
-		PatchLine []patchLines;
+		Orbit highlightedPatch;
+		bool highlightedPlanned;
+		Orbit selectedPatch;
+		bool selectedPlanned;
 
-		void CalcVelocities (double mu, double r, double a, out double Vpe, out double Vcirc)
+		void ScanPatches (List<Orbit> patches, bool highlight, bool planned)
 		{
-			Vpe = Math.Sqrt (mu * (2/r - 1/a));
-			Vcirc = Math.Sqrt (mu / r);
-		}
-
-		int WritePatchLines (int line, Orbit patch)
-		{
-			var body = patch.referenceBody;
-			patchLines[line].cur1 = body.name;
-			patchLines[line].cur3 = "";
-			patchLines[line].cur4 = "";
-			patchLines[line].curFlag = false;
-			if (patch.eccentricity <= 1) {
-				// when the trajectory is closed, the optimal
-				// circularization altitude is not valid and may be at
-				// either the apopapsis or the periapsis, depending on
-				// the orbit.
-				patchLines[line].cur2 = "N/A";
-				// ensure the other lines are blank in case the flight plane
-				// is hyperbolic
-				patchLines[line+1].cur1 = "";
-				patchLines[line+1].cur2 = "";
-				patchLines[line+1].cur3 = "";
-				patchLines[line+1].cur4 = "";
-				patchLines[line+1].curFlag = false;
-				patchLines[line+2].cur1 = "";
-				patchLines[line+2].cur2 = "";
-				patchLines[line+2].cur3 = "";
-				patchLines[line+2].cur4 = "";
-				patchLines[line+2].curFlag = false;
-				return 0;
-			}
-			double mu = body.gravParameter;
-			double a = patch.semiMajorAxis;
-			double e = patch.eccentricity;
-			double Vpe, Vcirc;
-			double Vinf = Math.Sqrt(-mu / a);
-			double pe = a * (1 - e);
-			CalcVelocities (mu, pe, a, out Vpe, out Vcirc);
-			double Ope = -2 * a;
-			double oVpe, oVcirc;
-			CalcVelocities (mu, Ope, a, out oVpe, out oVcirc);
-			patchLines[line].cur2 = Vinf.ToString("F1");
-			patchLines[line+1].cur1 = "";
-			patchLines[line+1].cur2 = pe.ToString("F1");
-			patchLines[line+1].cur3 = Vpe.ToString("F1");
-			patchLines[line+1].cur4 = (Vpe - Vcirc).ToString("F1");
-			patchLines[line+1].curFlag = false;
-			patchLines[line+2].cur1 = "";
-			patchLines[line+2].cur2 = Ope.ToString("F1");
-			patchLines[line+2].cur3 = oVpe.ToString("F1");
-			patchLines[line+2].cur4 = (oVpe - oVcirc).ToString("F1");
-			patchLines[line+2].curFlag = Ope >= body.sphereOfInfluence;
-			return 1;
-		}
-
-		int WritePlannedLines (int line, Orbit patch)
-		{
-			var body = patch.referenceBody;
-			patchLines[line].plan1 = body.name;
-			patchLines[line].plan3 = "";
-			patchLines[line].plan4 = "";
-			patchLines[line].planFlag = false;
-			if (patch.eccentricity <= 1) {
-				// when the trajectory is closed, the optimal
-				// circularization altitude is not valid and may be at
-				// either the apopapsis or the periapsis, depending on
-				// the orbit.
-				patchLines[line].plan2 = "N/A";
-				// ensure the other lines are blank in case the flight plane
-				// is hyperbolic
-				patchLines[line+1].plan1 = "";
-				patchLines[line+1].plan2 = "";
-				patchLines[line+1].plan3 = "";
-				patchLines[line+1].plan4 = "";
-				patchLines[line+1].planFlag = false;
-				patchLines[line+2].plan1 = "";
-				patchLines[line+2].plan2 = "";
-				patchLines[line+2].plan3 = "";
-				patchLines[line+2].plan4 = "";
-				patchLines[line+2].planFlag = false;
-				return 0;
-			}
-			double mu = body.gravParameter;
-			double a = patch.semiMajorAxis;
-			double e = patch.eccentricity;
-			double Vpe, Vcirc;
-			double Vinf = Math.Sqrt(-mu / a);
-			double pe = a * (1 - e);
-			CalcVelocities (mu, pe, a, out Vpe, out Vcirc);
-			double Ope = -2 * a;
-			double oVpe, oVcirc;
-			CalcVelocities (mu, Ope, a, out oVpe, out oVcirc);
-			patchLines[line].plan2 = Vinf.ToString("F1");
-			patchLines[line+1].plan1 = "";
-			patchLines[line+1].plan2 = pe.ToString("F1");
-			patchLines[line+1].plan3 = Vpe.ToString("F1");
-			patchLines[line+1].plan4 = (Vpe - Vcirc).ToString("F1");
-			patchLines[line+1].planFlag = false;
-			patchLines[line+2].plan1 = "";
-			patchLines[line+2].plan2 = Ope.ToString("F1");
-			patchLines[line+2].plan3 = oVpe.ToString("F1");
-			patchLines[line+2].plan4 = (oVpe - oVcirc).ToString("F1");
-			patchLines[line+2].planFlag = Ope >= body.sphereOfInfluence;
-			return 1;
-		}
-
-		void ScanPatches (Vessel vessel, bool highlight)
-		{
-			// patches is the list of trajectories the vessel will follow if
-			// no maneuvers are performed.
-			// flightPlan includes the trajectories of patches up to the time
-			// of the first maneuver node, and then is the trajectories the
-			// vessel will follow if that maneuver is performed (and any
-			// subsequent maneuvers as well)
-			var patches = vessel.patchedConicSolver.patches;
-			var flightPlan = vessel.patchedConicSolver.flightPlan;
-			int numPatches = 0;
-			int numPlanned = flightPlan.Count;
-
 			for (int i = 0; i < patches.Count; i++) {
-				if (!patches[i].activePatch) {
-					numPatches = i;
+				var patch = patches[i];
+				if (!patch.activePatch) {
 					break;
 				}
+				GUIStyle style = CBStyles.white;
+				double Vinf = double.NaN;
+				double Vsoi = double.NaN;
+				var body = patch.referenceBody;
+				double mu = body.gravParameter;
+				double Rsoi = body.sphereOfInfluence;
+				double a = patch.semiMajorAxis;
+				double e = patch.eccentricity;
+
+				if (e <= 1) {
+					style = CBStyles.red;
+					if (a * (1 + e) >= Rsoi) {
+						Vsoi = Math.Sqrt (mu * (2/Rsoi - 1/a));
+					}
+				} else {
+					Vsoi = Vinf = Math.Sqrt (-mu / a);
+					if (Rsoi < double.PositiveInfinity) {
+						Vsoi = Math.Sqrt (mu * (2/Rsoi - 1/a));
+					}
+					if (-2 * a >= Rsoi) {
+						style = CBStyles.yellow;
+					}
+				}
+				GUILayout.BeginHorizontal();
+				GUILayout.Label (patch.referenceBody.name, style);
+				GUILayout.FlexibleSpace ();
+				GUILayout.Label (Vinf.ToString("F1"), style);
+				GUILayout.Label (Vsoi.ToString("F1"), style);
+				GUILayout.EndHorizontal ();
+
+				Event evt = Event.current;
+				if (evt.type == EventType.Repaint) {
+					var rect = GUILayoutUtility.GetLastRect();
+					if (highlight && rect.Contains(evt.mousePosition)) {
+						highlightedPatch = patch;
+						highlightedPlanned = planned;
+					}
+				}
+				if (evt.isMouse) {
+					if (evt.button == 0 && highlightedPatch == patch) {
+						selectedPatch = patch;
+						selectedPlanned = planned;
+					}
+				}
+			}
+		}
+
+		void DataLine (string name, double val)
+		{
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (name);
+			GUILayout.FlexibleSpace ();
+			GUILayout.Label (val.ToString ("F1"), CBStyles.white,
+							 GUILayout.Width (120));
+			GUILayout.EndHorizontal ();
+		}
+
+		void DataBlock (string type, double pe, double vpe, double vcirc)
+		{
+			GUILayout.BeginVertical ();
+
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (type);
+			GUILayout.FlexibleSpace ();
+			GUILayout.EndHorizontal ();
+
+			DataLine ("Pe:", pe);
+			DataLine ("VPe:", vpe);
+			DataLine ("VCirc:", vcirc);
+			DataLine ("dV:", vpe - vcirc);
+
+			GUILayout.EndVertical ();
+		}
+
+		void DisplayPatch (Orbit patch, bool planned)
+		{
+			if (patch == null) {
+				double nan = double.NaN;
+				GUILayout.BeginHorizontal ();
+				GUILayout.Label (" ", GUILayout.Width(120));
+				GUILayout.EndHorizontal ();
+				GUILayout.BeginHorizontal ();
+				DataBlock ("Actual", nan, nan, nan);
+				DataBlock ("Optimal", nan, nan, nan);
+				GUILayout.EndHorizontal ();
+				return;
 			}
 
-			int count = Math.Max(numPlanned, numPatches);
-			if (patchLines == null || patchLines.Length < 3 * count) {
-				// each patch needs up to 3 lines:
-				// name Vinf ____ ___
-				// ____ pe   vpe  dV	current info
-				// ____ Ope  Ovpe OdV   optimal info
-				// with the set of columns repeated for the flight plan
-				patchLines = new PatchLine[count * 3];
-			}
+			var body = patch.referenceBody;
+			double mu = body.gravParameter;
+			double a = patch.semiMajorAxis;
+			double e = patch.eccentricity;
 
-			int line = 0;
-			for (int i = 0; i < count; i++) {
-				int full = 0;
-				if (i < numPatches) {
-					full |= WritePatchLines(line, patches[i]);
-				}
-				if (i < numPlanned) {
-					full |= WritePlannedLines(line, flightPlan[i]);
-				}
-				line += full == 1 ? 3 : 1;
-			}
+			double pe = a * (1 - e);
+			double vpe = Math.Sqrt (mu * (2/pe - 1/a));
+			double vcirc = Math.Sqrt (mu / pe);
+
+			double ope = -2 * a;
+			double ovpe = Math.Sqrt (mu * (2/ope - 1/a));
+			double ovcirc = Math.Sqrt (mu / ope);
+
+			GUILayout.BeginHorizontal ();
+			GUILayout.Label (planned ? "Planned" : "Current",
+							 GUILayout.Width(120));
+			GUILayout.EndHorizontal ();
+			GUILayout.BeginHorizontal ();
+			DataBlock ("Actual", pe, vpe, vcirc);
+			DataBlock ("Optimal", ope, ovpe, ovcirc);
+			GUILayout.EndHorizontal ();
+		}
+
+		void PatchLists (List<Orbit> patches, List<Orbit> flightPlan)
+		{
+			highlightedPatch = null;
 
 			GUILayout.BeginHorizontal ();
 
 			GUILayout.BeginVertical ();
-			for (int i = 0; i < line; i++) {
-				GUIStyle style = CBStyles.white;
-				if (patchLines[i].cur2 == "N/A") {
-					style = CBStyles.red;
-				}
-				if (patchLines[i].curFlag) {
-					style = CBStyles.yellow;
-				}
-				GUILayout.Label (patchLines[i].cur1, style);
-			}
+			GUILayout.Label ("Current Trajectory");
+			patchesScroll.Begin ();
+			ScanPatches (patches, patchesScroll.mouseOver, false);
+			patchesScroll.End ();
 			GUILayout.EndVertical ();
 
 			GUILayout.BeginVertical ();
-			for (int i = 0; i < line; i++) {
-				GUIStyle style = CBStyles.white;
-				if (patchLines[i].cur2 == "N/A") {
-					style = CBStyles.red;
-				}
-				if (patchLines[i].curFlag) {
-					style = CBStyles.yellow;
-				}
-				GUILayout.Label (patchLines[i].cur2, style);
-			}
-			GUILayout.EndVertical ();
-
-			GUILayout.BeginVertical ();
-			for (int i = 0; i < line; i++) {
-				GUIStyle style = CBStyles.white;
-				if (patchLines[i].cur2 == "N/A") {
-					style = CBStyles.red;
-				}
-				if (patchLines[i].curFlag) {
-					style = CBStyles.yellow;
-				}
-				GUILayout.Label (patchLines[i].cur3, style);
-			}
-			GUILayout.EndVertical ();
-
-			GUILayout.BeginVertical ();
-			for (int i = 0; i < line; i++) {
-				GUIStyle style = CBStyles.white;
-				if (patchLines[i].cur2 == "N/A") {
-					style = CBStyles.red;
-				}
-				if (patchLines[i].curFlag) {
-					style = CBStyles.yellow;
-				}
-				GUILayout.Label (patchLines[i].cur4, style);
-			}
-			GUILayout.EndVertical ();
-
-			GUILayout.BeginVertical ();
-			for (int i = 0; i < line; i++) {
-				GUIStyle style = CBStyles.white;
-				if (patchLines[i].plan2 == "N/A") {
-					style = CBStyles.red;
-				}
-				if (patchLines[i].planFlag) {
-					style = CBStyles.yellow;
-				}
-				GUILayout.Label (patchLines[i].plan1, style);
-			}
-			GUILayout.EndVertical ();
-
-			GUILayout.BeginVertical ();
-			for (int i = 0; i < line; i++) {
-				GUIStyle style = CBStyles.white;
-				if (patchLines[i].plan2 == "N/A") {
-					style = CBStyles.red;
-				}
-				if (patchLines[i].planFlag) {
-					style = CBStyles.yellow;
-				}
-				GUILayout.Label (patchLines[i].plan2, style);
-			}
-			GUILayout.EndVertical ();
-
-			GUILayout.BeginVertical ();
-			for (int i = 0; i < line; i++) {
-				GUIStyle style = CBStyles.white;
-				if (patchLines[i].plan2 == "N/A") {
-					style = CBStyles.red;
-				}
-				if (patchLines[i].planFlag) {
-					style = CBStyles.yellow;
-				}
-				GUILayout.Label (patchLines[i].plan3, style);
-			}
-			GUILayout.EndVertical ();
-
-			GUILayout.BeginVertical ();
-			for (int i = 0; i < line; i++) {
-				GUIStyle style = CBStyles.white;
-				if (patchLines[i].plan2 == "N/A") {
-					style = CBStyles.red;
-				}
-				if (patchLines[i].planFlag) {
-					style = CBStyles.yellow;
-				}
-				GUILayout.Label (patchLines[i].plan4, style);
-			}
+			GUILayout.Label ("Planned Trajectory");
+			plannedScroll.Begin ();
+			ScanPatches (flightPlan, plannedScroll.mouseOver, true);
+			plannedScroll.End ();
 			GUILayout.EndVertical ();
 
 			GUILayout.EndHorizontal ();
@@ -393,11 +267,24 @@ namespace CircBurn {
 				return;
 			}
 
+			// patches is the list of trajectories the vessel will follow if
+			// no maneuvers are performed.
+			// flightPlan includes the trajectories of patches up to the time
+			// of the first maneuver node, and then is the trajectories the
+			// vessel will follow if that maneuver is performed (and any
+			// subsequent maneuvers as well)
+			var patches = vessel.patchedConicSolver.patches;
+			var flightPlan = vessel.patchedConicSolver.flightPlan;
+
 			GUILayout.BeginVertical ();
 
-			patchscroll.Begin ();
-			ScanPatches (vessel, patchscroll.mouseOver);
-			patchscroll.End ();
+			PatchLists (patches, flightPlan);
+
+			if (selectedPatch != null) {
+				DisplayPatch (selectedPatch, selectedPlanned);
+			} else {
+				DisplayPatch (highlightedPatch, highlightedPlanned);
+			}
 
 			GUILayout.EndVertical ();
 
