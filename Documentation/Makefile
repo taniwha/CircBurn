@@ -1,0 +1,43 @@
+export MODNAME		:= CircBurn
+export KSPDIR		:= ${HOME}/ksp/KSP_linux
+export GAMEDATA		:= ${KSPDIR}/GameData
+export MODGAMEDATA	:= ${GAMEDATA}/${MODNAME}
+
+DOC_FILES := \
+	FreeEVA.png \
+	License.txt \
+	README.md
+
+RESGEN2		:= resgen2
+GMCS		:= gmcs
+GMCSFLAGS	:= -optimize -warnaserror
+GIT			:= git
+TAR			:= tar
+ZIP			:= zip
+
+all: CircBurn.pdf
+
+info:
+	@echo "CircBurn Build Information"
+	@echo "    resgen2:    ${RESGEN2}"
+	@echo "    gmcs:       ${GMCS}"
+	@echo "    gmcs flags: ${GMCSFLAGS}"
+	@echo "    git:        ${GIT}"
+	@echo "    tar:        ${TAR}"
+	@echo "    zip:        ${ZIP}"
+	@echo "    KSP Data:   ${KSPDIR}"
+
+%.pdf: %.lyx
+	lyx -E pdf4 $@ $^
+
+clean:
+	rm -f *.pdf
+
+veryclean: clean
+	rm -f *.bak *~
+
+install: all
+	mkdir -p ${MODGAMEDATA}
+	cp *.pdf ${MODGAMEDATA}
+
+.PHONY: all clean install veryclean

@@ -1,0 +1,621 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass scrartcl
+\begin_preamble
+\usepackage[pdf]{graphviz}
+\usepackage{marginfix}
+\usepackage{polyglossia}
+\setdefaultlanguage{english}
+\usepackage[nottoc]{tocbibind}
+\usepackage[style=numeric,backend=biber]{biblatex}
+\addbibresource{kspforums.bib}
+\setlength{\intextsep}{0cm plus1cm minus1cm}
+\date{}
+\end_preamble
+\use_default_options true
+\begin_modules
+logicalmkup
+\end_modules
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts true
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command biber
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+CircBurn
+\end_layout
+
+\begin_layout Subtitle
+User's Guide
+\end_layout
+
+\begin_layout Author
+Bill Currie (taniwha)
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace vfill
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+“Once you get to earth orbit, you’re halfway to anywhere in the solar system.”
+ — Robert A.
+ Heinlein 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage clearpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Part*
+Introduction
+\end_layout
+
+\begin_layout Standard
+While the Oberth effect means that a rocket that is traveling at a high
+ velocity can make much larger changes to its energy than can a rocket traveling
+ at low velocity, this does not mean that it is always best to perform maneuvers
+ as deep as possible in a gravity well, even to circularize an orbit or
+ depart for interplanetary travel.
+ It is, however, always best to circularize an orbit at either its periapsis
+ or apoapsis
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Hyperbolic trajectories do not have a usable apoapsis, however.
+\end_layout
+
+\end_inset
+
+.
+ CircBurn's purpose is to indicate the optimal periapsis for a given hyperbolic
+ trajectory.
+ Due to the complications involved in attaining the optimal periapsis, CircBurn
+ is only informative: it will never alter a vessel's current trajectory
+ or flight plan
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+A vessel's flight plan consists of the maneuver nodes planned for the vessel.
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage clearpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FloatList figure
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset FloatList table
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage clearpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Getting Started
+\end_layout
+
+\begin_layout Subsection
+Installation
+\end_layout
+
+\begin_layout Standard
+CircBurn has no dependencies, so simply extract the contents of the zip
+ file into your KSP GameData directory.
+\end_layout
+
+\begin_layout Subsection
+Usage
+\end_layout
+
+\begin_layout Standard
+Once in KSP, CircBurn can be activated in flight mode by clicking the app
+ launcher button 
+\begin_inset Graphics
+	filename ../Assets/CircBurn_icon.svg
+	width 0.75cm
+
+\end_inset
+
+, in either normal flight view or map view, though the information is generally
+ more useful in map view.
+\end_layout
+
+\begin_layout Subsubsection
+Window overview
+\end_layout
+
+\begin_layout Standard
+CircBurn's window contains four areas: the patches in the current trajectory
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+The trajectory the vessel will follow if no maneuvers are planned.
+\end_layout
+
+\end_inset
+
+, the patches in the flight plan
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+This includes those patches in the current directory up to the patch containing
+ the first maneuver node, and then any patches resulting from maneuver nodes
+ planned for the vessel.
+\end_layout
+
+\end_inset
+
+, the current periapsis details of the highlighted or selected patch, and
+ the optimal periapsis details of the highlighted or selected patch.
+ The current periapsis details will always be valid, but non-hyperbolic
+ trajectories do not have an optimal periapsis and thus the optimial periapsis
+ details will be a set of red NaN entries, and the patch in the current
+ trajectory or flight plan panels will be red.
+ Yellow indicates that the optimal periapsis is outside the body's sphere
+ of influence.
+\end_layout
+
+\begin_layout Subsubsection
+Patch panels
+\end_layout
+
+\begin_layout Standard
+The patch panels (current trajectory and flight plan) are both the same
+ format: a button to select the patch to be displayed without hovering the
+ mouse, the body name, 
+\begin_inset Formula $V_{inf}$
+\end_inset
+
+
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+Hyperbolic excess velocity, or the velocity of the vessel at infinity.
+ That is, the velocity the vessel asymptotically approaches as it gets further
+ from the body, assuming there are no other bodies in the universe.
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset Formula $V_{soi}$
+\end_inset
+
+
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+The velocity of the vessel at the boundary of the body's sphere of influence,
+ if the vessel's orbit reaches that far, otherwise NaN.
+ If the body's sphere of influence is infinite, then 
+\begin_inset Formula $V_{soi}$
+\end_inset
+
+ will be equal to 
+\begin_inset Formula $V_{inf}$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+.
+ Both velocities are in 
+\begin_inset Formula $m/s$
+\end_inset
+
+.
+ Simply mousing over a patch will display its details in the lower panels
+ unless another patch has been selected.
+ Clicking the left mouse button over the button for a patch that is not
+ selected will select that patch and lock its display such that the mouse
+ cursor is ignored.
+ Clicking on the button for a patch that is selected will unlock the details
+ displays such that hovering the mouse works again.
+ Note that 
+\begin_inset Formula $V_{soi}$
+\end_inset
+
+ may be valid even when 
+\begin_inset Formula $V_{inf}$
+\end_inset
+
+ is not: this means that the orbit is elliptical but the apoapsis it outside
+ the body's sphere of influence.
+\end_layout
+
+\begin_layout Subsubsection
+Patch details
+\end_layout
+
+\begin_layout Standard
+The two panels of the patch details display show the same information, but
+ the left panel, labeled 
+\begin_inset Quotes eld
+\end_inset
+
+Actual
+\begin_inset Quotes erd
+\end_inset
+
+, shows the details for the current periapsis of the selected patch, while
+ the right panel, labeled 
+\begin_inset Quotes eld
+\end_inset
+
+Optimal
+\begin_inset Quotes erd
+\end_inset
+
+, displays the details for the optimal periapsis, if it exists.
+ If the optimal periapsis does not exist, the details will all read 
+\begin_inset Formula $NaN$
+\end_inset
+
+ in red.
+\end_layout
+
+\begin_layout Description
+Pe The periapsis altitude in meters.
+ If the periapsis is inside the body, then the number will be negative.
+\end_layout
+
+\begin_layout Description
+VPe The velocity at the periapsis, in 
+\begin_inset Formula $m/s$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Description
+VCirc The velocity of the vessel after achieving circular orbit at the periapsis
+, in 
+\begin_inset Formula $m/s$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Description
+dV The 
+\begin_inset Formula $\Delta V$
+\end_inset
+
+ required to achieve circular orbit, in 
+\begin_inset Formula $m/s$
+\end_inset
+
+.
+ Simply 
+\begin_inset Formula $VCirc-VPe$
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+If the periapsis is outside the body's sphere of influence
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+True for only the optimal periapsis.
+\end_layout
+
+\end_inset
+
+, the numbers will be shown in yellow.
+\end_layout
+
+\begin_layout Section
+How it works.
+\end_layout
+
+\begin_layout Standard
+The escape velocity
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+The velocity at a particular altitude that will result in a velocity of
+ 
+\begin_inset Formula $0m/s$
+\end_inset
+
+ at an infinite distance from the body.
+\end_layout
+
+\end_inset
+
+ at a particular altitude is always exactly 
+\begin_inset Formula $\sqrt{2}*VCirc$
+\end_inset
+
+, thus it increases with the depth of the orbit within the gravity well
+ of the parent body.
+ However, velocities greater than the escape velocity result in in a hyperbolic
+ excess velocity
+\begin_inset Foot
+status collapsed
+
+\begin_layout Plain Layout
+The velocity remaining when the vessel is infinitely distant from the body,
+ or 
+\begin_inset Formula $V_{inf}$
+\end_inset
+
+.
+\end_layout
+
+\end_inset
+
+ that is often much larger than the difference between the velocity and
+ the escape velocity.
+ For the same difference between current velocity and escape velocity, the
+ hyperbolic excess increases with the depth within the body's gravity well.
+ This means that for a given 
+\begin_inset Formula $V_{inf}$
+\end_inset
+
+, the 
+\begin_inset Formula $\Delta V$
+\end_inset
+
+ required to go from a hyperbolic trajectory to an elliptical orbit decreases
+ with the depth within the body's gravity well, but the 
+\begin_inset Formula $\Delta V$
+\end_inset
+
+ to turn the elliptical orbit into a circular orbit increases with the depth.
+ The cost to circularize from a hyperbolic trajectory is the sum of the
+ two 
+\begin_inset Formula $\Delta V$
+\end_inset
+
+s, thus there is a point where the 
+\begin_inset Formula $\Delta V$
+\end_inset
+
+ cost is at a minimum, and the higher 
+\begin_inset Formula $V_{inf}$
+\end_inset
+
+ is, the deeper that point is in the body's gravity well.
+\end_layout
+
+\begin_layout Subsection
+The math
+\end_layout
+
+\begin_layout Standard
+Starting with the vis-viva equation:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+v^{2}=\mu\left(\frac{2}{r}-\frac{1}{a}\right)
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+where 
+\begin_inset Formula $\mu$
+\end_inset
+
+ is the gravitational parameter of the body (
+\begin_inset Formula $GM$
+\end_inset
+
+, the gravitational constant times the mass of the body), 
+\begin_inset Formula $r$
+\end_inset
+
+ is the distance from the body's center, and 
+\begin_inset Formula $a$
+\end_inset
+
+ is the semi-major axis of the orbit.
+ For hyperbolic 
+\begin_inset Quotes eld
+\end_inset
+
+orbits
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Formula $a$
+\end_inset
+
+ is negative.
+\end_layout
+
+\begin_layout Standard
+Setting 
+\begin_inset Formula $r$
+\end_inset
+
+to infinity results in:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\begin{eqnarray*}
+V_{inf}^{2} & = & \mu\left(\frac{2}{\infty}-\frac{1}{a}\right)\\
+ & = & \mu\left(0-\frac{1}{a}\right)\\
+ & = & -\frac{\mu}{a}
+\end{eqnarray*}
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+more later :P
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage clearpage
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+printbibliography[heading=bibintoc]
+\end_layout
+
+\end_inset
+
+
+\begin_inset Note Note
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "kspforums"
+options "bibtotoc,plain"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
