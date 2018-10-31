@@ -47,8 +47,11 @@ namespace CircBurn {
 
 		internal static CircBurn instance;
 
-		ScrollView patchesScroll = new ScrollView (320, 200);
-		ScrollView plannedScroll = new ScrollView (320, 200);
+		ScrollView patchesScroll = new ScrollView (400, 200);
+		ScrollView plannedScroll = new ScrollView (400, 200);
+
+		static GUILayoutOption numberWidth = GUILayout.Width (120);
+		static GUILayoutOption plannedWidth = GUILayout.Width (120);
 
 		public static void ToggleGUI ()
 		{
@@ -146,8 +149,8 @@ namespace CircBurn {
 				GUILayout.BeginHorizontal();
 				GUILayout.Label (patch.referenceBody.name, style);
 				GUILayout.FlexibleSpace ();
-				GUILayout.Label (Vinf.ToString("F1"), style);
-				GUILayout.Label (Vsoi.ToString("F1"), style);
+				GUILayout.Label (Vinf.ToString("F1"), style, numberWidth);
+				GUILayout.Label (Vsoi.ToString("F1"), style, numberWidth);
 				GUILayout.EndHorizontal ();
 
 				Event evt = Event.current;
@@ -167,17 +170,17 @@ namespace CircBurn {
 			}
 		}
 
-		void DataLine (string name, double val)
+		void DataLine (string name, double val, GUIStyle style)
 		{
 			GUILayout.BeginHorizontal ();
 			GUILayout.Label (name);
 			GUILayout.FlexibleSpace ();
-			GUILayout.Label (val.ToString ("F1"), CBStyles.white,
-							 GUILayout.Width (120));
+			GUILayout.Label (val.ToString ("F1"), style, numberWidth);
 			GUILayout.EndHorizontal ();
 		}
 
-		void DataBlock (string type, double pe, double vpe, double vcirc)
+		void DataBlock (string type, double pe, double vpe, double vcirc,
+						GUIStyle style)
 		{
 			GUILayout.BeginVertical ();
 
@@ -186,10 +189,10 @@ namespace CircBurn {
 			GUILayout.FlexibleSpace ();
 			GUILayout.EndHorizontal ();
 
-			DataLine ("Pe:", pe);
-			DataLine ("VPe:", vpe);
-			DataLine ("VCirc:", vcirc);
-			DataLine ("dV:", vpe - vcirc);
+			DataLine ("Pe:", pe, style);
+			DataLine ("VPe:", vpe, style);
+			DataLine ("VCirc:", vcirc, style);
+			DataLine ("dV:", vpe - vcirc, style);
 
 			GUILayout.EndVertical ();
 		}
@@ -199,16 +202,17 @@ namespace CircBurn {
 			if (patch == null) {
 				double nan = double.NaN;
 				GUILayout.BeginHorizontal ();
-				GUILayout.Label (" ", GUILayout.Width(120));
+				GUILayout.Label (" ", plannedWidth);
 				GUILayout.EndHorizontal ();
 				GUILayout.BeginHorizontal ();
-				DataBlock ("Actual", nan, nan, nan);
-				DataBlock ("Optimal", nan, nan, nan);
+				DataBlock ("Actual", nan, nan, nan, CBStyles.white);
+				DataBlock ("Optimal", nan, nan, nan, CBStyles.white);
 				GUILayout.EndHorizontal ();
 				return;
 			}
 
 			var body = patch.referenceBody;
+			double Rsoi = body.sphereOfInfluence;
 			double mu = body.gravParameter;
 			double a = patch.semiMajorAxis;
 			double e = patch.eccentricity;
@@ -221,13 +225,22 @@ namespace CircBurn {
 			double ovpe = Math.Sqrt (mu * (2/ope - 1/a));
 			double ovcirc = Math.Sqrt (mu / ope);
 
+			GUIStyle style = CBStyles.white;
+			if (e <= 1) {
+				style = CBStyles.red;
+				ope = ovpe = ovcirc = double.NaN;
+			} else {
+				if (ope >= Rsoi) {
+					style = CBStyles.yellow;
+				}
+			}
+
 			GUILayout.BeginHorizontal ();
-			GUILayout.Label (planned ? "Planned" : "Current",
-							 GUILayout.Width(120));
+			GUILayout.Label (planned ? "Planned" : "Current", plannedWidth);
 			GUILayout.EndHorizontal ();
 			GUILayout.BeginHorizontal ();
-			DataBlock ("Actual", pe, vpe, vcirc);
-			DataBlock ("Optimal", ope, ovpe, ovcirc);
+			DataBlock ("Actual", pe, vpe, vcirc, CBStyles.white);
+			DataBlock ("Optimal", ope, ovpe, ovcirc, style);
 			GUILayout.EndHorizontal ();
 		}
 
