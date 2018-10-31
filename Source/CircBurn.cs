@@ -127,8 +127,10 @@ namespace CircBurn {
 			}
 		}
 
-		void ScanPatches (List<Orbit> patches, bool highlight, bool planned)
+		bool ScanPatches (List<Orbit> patches, bool highlight, bool planned)
 		{
+			bool foundSelected = false;
+
 			for (int i = 0; i < patches.Count; i++) {
 				var patch = patches[i];
 				if (!patch.activePatch) {
@@ -173,7 +175,11 @@ namespace CircBurn {
 						highlightedPlanned = planned;
 					}
 				}
+				if (patch == selectedPatch) {
+					foundSelected = true;
+				}
 			}
+			return foundSelected;
 		}
 
 		void DataLine (string name, double val, GUIStyle style)
@@ -257,19 +263,24 @@ namespace CircBurn {
 
 			GUILayout.BeginHorizontal ();
 
+			bool selOK = false;
 			GUILayout.BeginVertical ();
 			GUILayout.Label ("Current Trajectory");
 			patchesScroll.Begin ();
-			ScanPatches (patches, patchesScroll.mouseOver, false);
+			selOK |= ScanPatches (patches, patchesScroll.mouseOver, false);
 			patchesScroll.End ();
 			GUILayout.EndVertical ();
 
 			GUILayout.BeginVertical ();
 			GUILayout.Label ("Planned Trajectory");
 			plannedScroll.Begin ();
-			ScanPatches (flightPlan, plannedScroll.mouseOver, true);
+			selOK |= ScanPatches (flightPlan, plannedScroll.mouseOver, true);
 			plannedScroll.End ();
 			GUILayout.EndVertical ();
+
+			if (!selOK) {
+				selectedPatch = null;
+			}
 
 			GUILayout.EndHorizontal ();
 		}
