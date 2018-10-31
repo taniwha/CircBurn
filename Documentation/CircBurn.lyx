@@ -261,7 +261,7 @@ This includes those patches in the current directory up to the patch containing
 , the current periapsis details of the highlighted or selected patch, and
  the optimal periapsis details of the highlighted or selected patch.
  The current periapsis details will always be valid, but non-hyperbolic
- trajectories do not have an optimal periapsis and thus the optimial periapsis
+ trajectories do not have an optimal periapsis and thus the optimal periapsis
  details will be a set of red NaN entries, and the patch in the current
  trajectory or flight plan panels will be red.
  Yellow indicates that the optimal periapsis is outside the body's sphere
