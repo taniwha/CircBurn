@@ -47,8 +47,8 @@ namespace CircBurn {
 
 		internal static CircBurn instance;
 
-		ScrollView patchesScroll = new ScrollView (400, 200);
-		ScrollView plannedScroll = new ScrollView (400, 200);
+		ScrollView patchesScroll = new ScrollView (420, 200);
+		ScrollView plannedScroll = new ScrollView (420, 200);
 
 		static GUILayoutOption numberWidth = GUILayout.Width (120);
 		static GUILayoutOption plannedWidth = GUILayout.Width (120);
@@ -116,6 +116,17 @@ namespace CircBurn {
 		Orbit selectedPatch;
 		bool selectedPlanned;
 
+		void SelectPatch (Orbit patch, bool planned)
+		{
+			bool curState = selectedPatch == patch;
+			bool newState = GUILayout.Toggle (curState, "");
+
+			if (newState != curState) {
+				selectedPatch = newState ? patch : null;
+				selectedPlanned = planned;
+			}
+		}
+
 		void ScanPatches (List<Orbit> patches, bool highlight, bool planned)
 		{
 			for (int i = 0; i < patches.Count; i++) {
@@ -147,6 +158,7 @@ namespace CircBurn {
 					}
 				}
 				GUILayout.BeginHorizontal();
+				SelectPatch (patch, planned);
 				GUILayout.Label (patch.referenceBody.name, style);
 				GUILayout.FlexibleSpace ();
 				GUILayout.Label (Vinf.ToString("F1"), style, numberWidth);
@@ -159,12 +171,6 @@ namespace CircBurn {
 					if (highlight && rect.Contains(evt.mousePosition)) {
 						highlightedPatch = patch;
 						highlightedPlanned = planned;
-					}
-				}
-				if (evt.isMouse) {
-					if (evt.button == 0 && highlightedPatch == patch) {
-						selectedPatch = patch;
-						selectedPlanned = planned;
 					}
 				}
 			}
