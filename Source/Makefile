@@ -10,6 +10,8 @@ TARGETS		:= ${MODNAME}.dll
 EB_FILES := \
     AssemblyInfo.cs	\
 	CircBurn.cs \
+	ScrollView.cs \
+	Styles.cs \
 	Toolbar.cs \
 	VersionReport.cs \
 	$e
