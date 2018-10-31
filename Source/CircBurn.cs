@@ -113,10 +113,13 @@ namespace CircBurn {
 
 		Orbit highlightedPatch;
 		bool highlightedPlanned;
+		// KSP creates new patches every time a maneuver node updates :(
+		// (is that my fault?)
+		int selectedIndex;
 		Orbit selectedPatch;
 		bool selectedPlanned;
 
-		void SelectPatch (Orbit patch, bool planned)
+		void SelectPatch (Orbit patch, bool planned, int index)
 		{
 			bool curState = selectedPatch == patch;
 			bool newState = GUILayout.Toggle (curState, "");
@@ -124,6 +127,7 @@ namespace CircBurn {
 			if (newState != curState) {
 				selectedPatch = newState ? patch : null;
 				selectedPlanned = planned;
+				selectedIndex = index;
 			}
 		}
 
@@ -160,7 +164,7 @@ namespace CircBurn {
 					}
 				}
 				GUILayout.BeginHorizontal();
-				SelectPatch (patch, planned);
+				SelectPatch (patch, planned, i);
 				GUILayout.Label (patch.referenceBody.name, style);
 				GUILayout.FlexibleSpace ();
 				GUILayout.Label (Vinf.ToString("F1"), style, numberWidth);
@@ -259,6 +263,10 @@ namespace CircBurn {
 
 		void PatchLists (List<Orbit> patches, List<Orbit> flightPlan)
 		{
+			if (selectedPatch != null && selectedPlanned
+				&& selectedIndex < flightPlan.Count) {
+				selectedPatch = flightPlan[selectedIndex];
+			}
 			highlightedPatch = null;
 
 			GUILayout.BeginHorizontal ();
