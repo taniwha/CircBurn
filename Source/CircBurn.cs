@@ -218,6 +218,7 @@ namespace CircBurn {
 			}
 
 			var body = patch.referenceBody;
+			double R = body.Radius;
 			double Rsoi = body.sphereOfInfluence;
 			double mu = body.gravParameter;
 			double a = patch.semiMajorAxis;
@@ -245,8 +246,8 @@ namespace CircBurn {
 			GUILayout.Label (planned ? "Planned" : "Current", plannedWidth);
 			GUILayout.EndHorizontal ();
 			GUILayout.BeginHorizontal ();
-			DataBlock ("Actual", pe, vpe, vcirc, CBStyles.white);
-			DataBlock ("Optimal", ope, ovpe, ovcirc, style);
+			DataBlock ("Actual", pe - R, vpe, vcirc, CBStyles.white);
+			DataBlock ("Optimal", ope - R, ovpe, ovcirc, style);
 			GUILayout.EndHorizontal ();
 		}
 
