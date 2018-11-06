@@ -342,13 +342,6 @@ namespace CircBurn {
 					windowpos, WindowGUI,
 					CircBurnVersionReport.GetVersion (),
 					GUILayout.Width (500));
-				if (windowpos.Contains (new Vector2 (Input.mousePosition.x, Screen.height - Input.mousePosition.y))) {
-					InputLockManager.SetControlLock ("CB_Flight_window_lock");
-				} else {
-					InputLockManager.RemoveControlLock ("CB_Flight_window_lock");
-				}
-			} else {
-				InputLockManager.RemoveControlLock ("CB_Flight_window_lock");
 			}
 		}
 	}
