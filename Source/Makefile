@@ -46,7 +46,7 @@ info:
 ${MODNAME}.dll: ${EB_FILES}
 	${GMCS} ${GMCSFLAGS} -t:library -lib:${MANAGED} \
 		-r:Assembly-CSharp,Assembly-CSharp-firstpass \
-		-r:UnityEngine,UnityEngine.UI \
+		-r:UnityEngine,UnityEngine.UI,UnityEngine.IMGUIModule,UnityEngine.CoreModule,UnityEngine.TextRenderingModule,UnityEngine.AnimationModule \
 		-out:$@ $^
 
 clean:
